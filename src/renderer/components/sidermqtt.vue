@@ -84,17 +84,12 @@
         isOnthree: false,
         menuType: 1,
         // 菜单组
-        menuList: [{
-            key: '0',
-            name: '李金玉pc',
-            ip: '192.168.235.1',
-            port: '8234',
-          },
+        menuList: [
           {
-            key: "1",
-            name: '高金鑫pc',
-            ip: '192.168.4.42',
-            port: '10002',
+            key:'0',
+            name:"mqtt",
+            ip:'',
+            port:'',
           }
         ],
         // 控制显隐 

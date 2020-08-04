@@ -14,7 +14,8 @@
         <a-layout-footer>
             <a-row class="action">
                 <a-button type="primary" icon="plus" @click="openDialog(menuType)">添加数据</a-button>
-                <a-button type="primary" icon="copy" >发布</a-button>
+                <a-button type="primary" icon="copy">发布</a-button>
+                <a-button type="primary" icon="">重启</a-button>
             </a-row>
         </a-layout-footer>
         <addCollectDialog :visible="addCollectDialogVisible" @cancel="cancelAddCollectDialog"
@@ -31,12 +32,12 @@
         data() {
             return {
                 // 控制调出弹框选择
-                menuType:0,
+                menuType: 0,
                 // 控制采集点弹框
                 addCollectDialogVisible: false,
 
                 columns: [],
-                data:[],
+                data: [],
                 // 监控点表
                 monitorColumns: [{
                         title: 'name',
@@ -89,10 +90,26 @@
                         ellipsis: true,
                     }
                 ],
-                monitorData:[],
+                monitorData: [],
                 otaColumns: [],
-                monitorDataColumns: [
-
+                monitorDataColumns: [{
+                        key: '0',
+                        name: '温度',
+                        areatype: 'DB',
+                        db: 1,
+                        dbtype: 5,
+                        pos: 0,
+                        bit: 0,
+                    },
+                    {
+                        key: '1',
+                        name: '温度',
+                        areatype: 'DB',
+                        db: 1,
+                        dbtype: 5,
+                        pos: 0,
+                        bit: 0,
+                    },
                 ],
 
             }
@@ -125,6 +142,14 @@
         },
         mounted() {
             this.menuType = 1;
+        },
+        watch: {
+            menuType: function (val) {
+                if (val === 1) {
+                    this.columns = this.monitorColumns;
+                    this.data = this.monitorData;
+                }
+            }
         }
     }
 </script>
