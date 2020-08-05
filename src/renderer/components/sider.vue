@@ -93,9 +93,9 @@
           {
             key: "1",
             name: '高金鑫pc',
-            ip: '192.168.4.42',
+            ip: '192.168.1.110',
             port: '10002',
-          }
+          },
         ],
         // 控制显隐 
         addBoxDialogVisible: false,

@@ -24,7 +24,7 @@ router.post('/disconnect',(ctx) => {
     console.log(ctx.request.body)
 
     if(socketArr[body.index].connecting === true) {
-        socketArr[body.index].end();
+        // socketArr[body.index].end();
         console.log(socketArr[body.index].connecting);
         ctx.body = {
             index:body.index,
@@ -38,14 +38,26 @@ router.post('/disconnect',(ctx) => {
 //  发送接口
 router.post('/send',(ctx) => {
     let body = ctx.request.body;
-    let buf1 = Buffer.from("020");
+    console.log(body)
+    // let code = body.code;
+    // console.log(code)
+    let buf1 = Buffer.from('020')
     let buf2 = Buffer.from(body.msg);
     let buf = Buffer.concat([buf1,buf2]);
-    console.log(buf);
+    console.log(buf)
     socketArr[body.index].write(buf);
     ctx.status = 200;
 
 })
+
+function intToByte4 (i) {
+        var targets =[];
+        targets[0] = (i & 0xFF);
+        targets[1] = (i >> 8 & 0xFF);
+        targets[2] = (i >> 16 & 0xFF);
+        targets[3] = (i >> 24 & 0xFF);
+        return targets;
+    }
 
 app.use(router.routes())
 
@@ -58,8 +70,10 @@ const net = require('net');
 const { connect } = require('http2');
 let Socket =  net.Socket;
 function sponsoredLinks(host,port) {
-  let socket = new Socket();
-  return socket.connect(port,host,() => {
-       socket.write('hello,server')
-   });
+  let socket = new Socket().connect(port,host);
+  console.log(host,port)
+  socket.on('data',(data) => {
+      console.log(Buffer.from(data).toString())
+  })
+  return socket
 }
