@@ -70,19 +70,19 @@
 
 <script>
     export default {
-        props: ["visible"],
+        props: ["visible","itemForm","isAdd", "flag"],
         data() {
             return {
                 form: {
-                    // protocol: '',
-                    // connectType: '',
-                    // slavePort: 0,
-                    // baudRate: 0,
-                    // ipAddr: '',
-                    // port: '',
-                    // rack: 0,
-                    // slot: 0,
-                    // intervalTime: 0,
+                    protocol: '',
+                    connectType: '',
+                    slavePort: '',
+                    baudRate: '',
+                    ipAddr: '',
+                    port: '',
+                    rack: '',
+                    slot: '',
+                    intervalTime: '',
                 }
             }
         },
@@ -94,6 +94,13 @@
             ensure() {
                 this.$emit("ensure",this.form)
                 this.form={};
+            }
+        },
+        watch:{
+            flag: function (val) {
+                if(this.isAdd === false) {
+                    this.form = this.itemForm;
+                }
             }
         }
     }

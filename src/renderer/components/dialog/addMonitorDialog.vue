@@ -91,7 +91,7 @@
 
 <script>
   export default {
-    props:["visible"],
+    props:["visible", "itemForm","isAdd", "flag"],
     data() {
       return{
         labelCol:{span:4},
@@ -108,6 +108,11 @@
       ensure() {
 
       },
+      watch:{
+        flag: function () {
+          this.form = this.itemForm;
+        }
+      }
     }
   }
 </script>

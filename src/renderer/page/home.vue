@@ -8,8 +8,8 @@
             <span>学习平台</span>
             <span>API文档</span>
           </el-col>
-          <el-col :span="3">
-            <a-select v-model="mode" style="width:100%;marging-right:30px;">
+          <el-col :span="6">
+            <a-select v-model="mode" class="modeselect">
               <a-select-option value = '1'>有线</a-select-option>
               <a-select-option value = '2'>无线</a-select-option>
             </a-select>
@@ -168,5 +168,14 @@
     justify-content: space-around;
     align-items: center;
     padding:0!important;
+  }
+  .modeselect .ant-select-selection {
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0px 0px 0px 0px;
+    color:green;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
   }
 </style>
