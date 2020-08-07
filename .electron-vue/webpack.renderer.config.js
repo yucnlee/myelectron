@@ -3,14 +3,18 @@
 process.env.BABEL_ENV = 'renderer'
 
 const path = require('path')
-const { dependencies } = require('../package.json')
+const {
+  dependencies
+} = require('../package.json')
 const webpack = require('webpack')
 
 const MinifyPlugin = require("babel-minify-webpack-plugin")
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { VueLoaderPlugin } = require('vue-loader')
+const {
+  VueLoaderPlugin
+} = require('vue-loader')
 
 /**
  * List of node_modules to include in webpack bundle
@@ -32,8 +36,7 @@ let rendererConfig = {
     ),
   ],
   module: {
-    rules: [
-      {
+    rules: [{
         test: /\.scss$/,
         use: ["vue-style-loader", "css-loader", "sass-loader"],
       },
@@ -112,19 +115,30 @@ let rendererConfig = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new MiniCssExtractPlugin({ filename: "styles.css" }),
+    new MiniCssExtractPlugin({
+      filename: "styles.css"
+    }),
     new HtmlWebpackPlugin({
-      filename: "index.html",
-      template: path.resolve(__dirname, "../src/index.ejs"),
+      filename: 'index.html',
+      template: path.resolve(__dirname, '../src/index.ejs'),
+      templateParameters(compilation, assets, options) {
+        return {
+          compilation: compilation,
+          webpack: compilation.getStats().toJson(),
+          webpackConfig: compilation.options,
+          htmlWebpackPlugin: {
+            files: assets,
+            options: options
+          },
+          process,
+        };
+      },
       minify: {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
-        removeComments: true,
+        removeComments: true
       },
-      nodeModules:
-        process.env.NODE_ENV !== "production"
-          ? path.resolve(__dirname, "../node_modules")
-          : false,
+      nodeModules: false
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
@@ -163,13 +177,11 @@ if (process.env.NODE_ENV === 'production') {
 
   rendererConfig.plugins.push(
     new MinifyPlugin(),
-    new CopyWebpackPlugin([
-      {
-        from: path.join(__dirname, '../static'),
-        to: path.join(__dirname, '../dist/electron/static'),
-        ignore: ['.*']
-      }
-    ]),
+    new CopyWebpackPlugin([{
+      from: path.join(__dirname, '../static'),
+      to: path.join(__dirname, '../dist/electron/static'),
+      ignore: ['.*']
+    }]),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
     }),

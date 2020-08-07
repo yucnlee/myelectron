@@ -1,4 +1,7 @@
-import { app, BrowserWindow } from 'electron'
+import {
+  app,
+  BrowserWindow
+} from 'electron'
 
 /**
  * Set `__static` path to static files in production
@@ -9,10 +12,11 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow
-const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
-  : `file://${__dirname}/index.html`
-function createWindow () {
+const winURL = process.env.NODE_ENV === 'development' ?
+  `http://localhost:9080` :
+  `file://${__dirname}/index.html`
+
+function createWindow() {
   /**
    * Initial window options
    */
@@ -20,14 +24,14 @@ function createWindow () {
     height: 563,
     useContentSize: true,
     width: 1000,
-    webPreferences:{
-      nodeIntegration:true
+    webPreferences: {
+      nodeIntegration: true
     }
   })
 
   mainWindow.loadURL(winURL)
 
-   mainWindow.webContents.openDevTools();
+  //  mainWindow.webContents.openDevTools();
   mainWindow.on('closed', () => {
     mainWindow = null
   })

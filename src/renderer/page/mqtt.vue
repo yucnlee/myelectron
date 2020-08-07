@@ -24,9 +24,11 @@
     <a-layout-footer>
       <a-row class="action">
         <a-button type="primary" icon="plus" @click="openDialog(menuType)">添加数据</a-button>
-        <a-button type="primary" icon="copy">发布</a-button>
-        <a-button type="primary" icon="copy">OTA</a-button>
-        <a-button type="primary" icon="copy">重启</a-button>
+        <a-button type="primary" icon="copy" @click="publishToptic">
+          <span>{{ buttonTxt }}</span>
+        </a-button>
+        <a-button type="primary" icon="copy" @click="ota">升级</a-button>
+        <a-button type="primary" icon="copy" @click="restart">重启</a-button>
       </a-row>
     </a-layout-footer>
     <addCollectDialog
@@ -42,6 +44,8 @@
 
 <script>
 import addCollectDialog from "@/components/dialog/addCollectDialog";
+import mqtt from "mqtt";
+
 export default {
   components: {
     addCollectDialog,
@@ -50,6 +54,7 @@ export default {
     return {
       // 控制调出弹框选择
       menuType: 0,
+      buttonTxt: "",
       // 控制采集点弹框
       addCollectDialogVisible: false,
 
@@ -206,6 +211,8 @@ export default {
       isAdd: true,
       itemForm: {},
       flag: true,
+      // mqtt 配置
+      option: {},
     };
   },
   methods: {
@@ -245,6 +252,65 @@ export default {
       this.flag = !this.flag;
       console.log(this.itemForm);
     },
+    publishToptic() {
+      if (this.menuType === 1) {
+        let topic = "Topic/sh1/box/10102020070001/system/CollectPoint";
+        let playload = {
+          version: "1.1",
+          data: [...this.monitorData],
+        };
+        this.client.publish(topic, JSON.stringify(playload), (error) => {
+          console.log(error);
+        });
+        console.log(this.client);
+      } else if (this.menuType === 2) {
+        let topic = "Topic/sh1/box/10102020070001/system/settingMonitor";
+        this.monitorDataData.map((e) => {
+          e.value = String.fromCharCode(e.value);
+          return e;
+        });
+        let playload = {
+          version: "1.1",
+          data: { ...this.monitorDataData },
+        };
+        this.client.publish(topic, JSON.stringify(playload));
+        console.log(this.client);
+      }
+    },
+    ota() {
+      let topic = "Topic/sh1/box/10102020070001/system/OTA";
+      let playload = {
+        version: "1.1",
+        path: "121.40.99.207/static/connect-box/ConnectBox",
+        file: "/home/fa/UPDATEFILE/ConnectBox",
+      };
+      let option = {
+        qos: 1,
+      };
+      this.client.publish(topic, JSON.stringify(playload), option, (error) => {
+        console.log(error);
+      });
+      console.log(this.client);
+    },
+    restart() {
+      let topic = "Topic/sh1/box/10102020070001/system/exit";
+      let playload = {
+        version: "1.1",
+        command: "exit",
+      };
+      let option = {
+        qos: 1,
+      };
+      this.client.publish(topic, JSON.stringify(playload), option, (error) => {
+        console.log(error);
+      });
+      console.log(this.client);
+    },
+  },
+  computed: {
+    client: function () {
+      return this.$store.state.client;
+    },
   },
   mounted() {
     this.menuType = 1;
@@ -254,6 +320,11 @@ export default {
       if (val === 1) {
         this.columns = this.monitorColumns;
         this.data = this.monitorData;
+        this.buttonTxt = "设置监控点";
+      } else if (val === 2) {
+        this.columns = this.monitorDataColumns;
+        this.data = this.monitorDataData;
+        this.buttonTxt = "设置监控点数据";
       }
     },
   },

@@ -341,7 +341,7 @@ export default {
       data: [],
       dataDev: [
         {
-          // key: "0",
+          key: "0",
           protocol: "S7",
           connectType: "Tcp",
           slavePort: 1,
@@ -355,7 +355,7 @@ export default {
       ],
       dataCollect: [
         {
-          // key: "0",
+          key: "0",
           name: "温度",
           areatype: "DB",
           db: 1,
@@ -364,7 +364,7 @@ export default {
           bit: 0,
         },
         {
-          // key: "1",
+          key: "1",
           name: "温度",
           areatype: "DB",
           db: 1,
@@ -375,7 +375,7 @@ export default {
       ],
       dataMqtt: [
         {
-          // key: "0",
+          key: "0",
           add: "39.98.183.135",
           port: "1883",
           pub_topic: "upload_data/highSpeedSheetMetalHydraulicPress/V1312345/",
@@ -403,23 +403,23 @@ export default {
     },
     setConfig() {},
     async sendMsg() {
-      if(this.menuType === 1) {
+      if (this.menuType === 1) {
         let playload = {
-        Device: this.dataDev[0],
-      };
-      // let code = "020"
-      let msg = JSON.stringify(playload);
-      let code = "020";
-      await send(this.menuIndex, code,msg);
-      } else if(this.menuType ===2) {
+          Device: this.dataDev[0],
+        };
+        // let code = "020"
+        let msg = JSON.stringify(playload);
+        let code = "020";
+        await send(this.menuIndex, code, msg);
+      } else if (this.menuType === 2) {
         let snap7 = {
-        version :"1.1",
-        data:[...this.dataCollect]
+          version: "1.1",
+          data: [...this.dataCollect],
+        };
+        let code = "030";
+        let msg = JSON.stringify(snap7);
+        await send(this.menuIndex, code, msg);
       }
-      let code = "030";
-      let msg = JSON.stringify(snap7);
-      await send(this.menuIndex,code,msg)
-    }
     },
     cancelAddDevDialog() {
       this.addDevDialogVisible = false;
