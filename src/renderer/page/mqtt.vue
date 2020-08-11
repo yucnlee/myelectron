@@ -1,13 +1,29 @@
 <template>
   <div>
     <a-layout-content>
-      <a-menu mode="horizontal" theme="dark" :default-selected-keys="['1']" class="table-menu">
+      <a-menu
+        mode="horizontal"
+        theme="dark"
+        :default-selected-keys="['1']"
+        class="table-menu"
+      >
         <a-menu-item key="1" @click="setMenuType(1)">设置监控点</a-menu-item>
-        <a-menu-item key="2" @click="setMenuType(2)">设置监控点数据</a-menu-item>
+        <a-menu-item key="2" @click="setMenuType(2)"
+          >设置监控点数据</a-menu-item
+        >
       </a-menu>
-      <a-table :columns="columns" :data-source="data" :pagination="false" bordered>
+      <a-table
+        :columns="columns"
+        :data-source="data"
+        :pagination="false"
+        bordered
+      >
         <span slot="action" slot-scope="text, record" class="dfsa">
-          <a-icon type="edit" class="pointer dib" @click="onedit(record)"></a-icon>
+          <a-icon
+            type="edit"
+            class="pointer dib"
+            @click="edit(record)"
+          ></a-icon>
           <!-- <a-icon type="copy" class="pointer dib"></a-icon> -->
           <a-popconfirm
             title="确定删除该条信息"
@@ -23,7 +39,9 @@
 
     <a-layout-footer>
       <a-row class="action">
-        <a-button type="primary" icon="plus" @click="openDialog(menuType)">添加数据</a-button>
+        <a-button type="primary" icon="plus" @click="openDialog(menuType)"
+          >添加数据</a-button
+        >
         <a-button type="primary" icon="copy" @click="publishToptic">
           <span>{{ buttonTxt }}</span>
         </a-button>
@@ -33,22 +51,34 @@
     </a-layout-footer>
     <addCollectDialog
       :visible="addCollectDialogVisible"
+      :itemForm="itemForm"
       :isAdd="isAdd"
       :flag="flag"
-      :itemForm="itemForm"
       @cancel="cancelAddCollectDialog"
       @ensure="ensureAddCollectDialog"
+      @edit="onedit"
     ></addCollectDialog>
+    <addCollectDataDialog
+      :visible="addCollecDataDialogVisible"
+      :itemForm="itemForm"
+      :isAdd="isAdd"
+      :flag="flag"
+      @cancel="cancelAddCollectDataDialog"
+      @ensure="ensureAddCollectDataDialog"
+      @edit="onedit"
+    ></addCollectDataDialog>
   </div>
 </template>
 
 <script>
 import addCollectDialog from "@/components/dialog/addCollectDialog";
+import addCollectDataDialog from "@/components/dialog/addCollectDataDialog";
 import mqtt from "mqtt";
 
 export default {
   components: {
     addCollectDialog,
+    addCollectDataDialog,
   },
   data() {
     return {
@@ -57,6 +87,7 @@ export default {
       buttonTxt: "",
       // 控制采集点弹框
       addCollectDialogVisible: false,
+      addCollecDataDialogVisible: false,
 
       columns: [],
       data: [],
@@ -114,26 +145,7 @@ export default {
           ellipsis: true,
         },
       ],
-      monitorData: [
-        {
-          key: "0",
-          name: "温度",
-          areatype: "DB",
-          db: 1,
-          dbtype: 5,
-          pos: 0,
-          bit: 0,
-        },
-        {
-          key: "1",
-          name: "温度",
-          areatype: "DB",
-          db: 1,
-          dbtype: 5,
-          pos: 0,
-          bit: 0,
-        },
-      ],
+      monitorData: [],
       otaColumns: [],
       monitorDataColumns: [
         {
@@ -195,18 +207,7 @@ export default {
           ellipsis: true,
         },
       ],
-      monitorDataData: [
-        {
-          key: "0",
-          name: "温度",
-          areatype: "DB",
-          db: 1,
-          dbtype: 5,
-          pos: 0,
-          bit: 0,
-          value: 123,
-        },
-      ],
+      monitorDataData: [],
       // 修改控制
       isAdd: true,
       itemForm: {},
@@ -216,21 +217,42 @@ export default {
     };
   },
   methods: {
+    deleteKey(arr) {
+      let newArr = this.deepClone(arr);
+      newArr.map((e) => {
+        delete e.key;
+        return e;
+      });
+      return newArr;
+    },
+    deepClone(obj) {
+      let cloneObj = Array.isArray(obj) ? [] : {};
+      if (obj && typeof obj === "object") {
+        for (var key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            if (obj[key] && typeof obj[key] === "object") {
+              cloneObj[key] = this.deepClone(obj[key]);
+            } else {
+              cloneObj[key] = obj[key];
+            }
+          }
+        }
+      }
+      return cloneObj;
+    },
     openDialog() {
       if (this.menuType === 1) {
         this.addCollectDialogVisible = true;
       } else if (this.menuType === 2) {
-        this.addCollectDialogVisible = true;
-      } else if (this.menuType === 3) {
-        this.addMqttDialogVisible = true;
+        this.addCollecDataDialogVisible = true;
       }
     },
     setMenuType(i) {
       this.menuType = i;
     },
     ensureAddCollectDialog(obj) {
-      this.dataCollect.push(obj);
-      this.dataDev.forEach((e, i) => {
+      this.monitorData.push(obj);
+      this.monitorData.forEach((e, i) => {
         e.key = "Col" + i;
         return e;
       });
@@ -239,46 +261,65 @@ export default {
     cancelAddCollectDialog() {
       this.addCollectDialogVisible = false;
     },
+    ensureAddCollectDataDialog(obj) {
+      this.monitorDataData.push(obj);
+      this.monitorDataData.forEach((e, i) => {
+        e.key = "Col" + i;
+        return e;
+      });
+      this.cancelAddCollectDataDialog();
+    },
+    cancelAddCollectDataDialog() {
+      this.addCollecDataDialogVisible = false;
+      this.isAdd = true;
+    },
     ondelete(key) {
       console.log("key", key);
       this.data = this.data.filter((e) => {
         return e.key != key;
       });
     },
-    onedit(record) {
+    edit(record) {
       this.openDialog();
       this.isAdd = false;
       this.itemForm = record;
       this.flag = !this.flag;
       console.log(this.itemForm);
     },
+    onedit() {
+      const target = this.data.findIndex((e) => {
+        return e.key === this.form.key;
+      });
+      this.data.splice(target, 1, form);
+      this.isAdd = true;
+    },
     publishToptic() {
       if (this.menuType === 1) {
-        let topic = "Topic/sh1/box/10102020070001/system/CollectPoint";
+        let topic = "Topic/sh1/box/10102020080001/system/CollectPoint";
         let playload = {
           version: "1.1",
-          data: [...this.monitorData],
+          data: [...this.deleteKey(this.monitorData)],
         };
         this.client.publish(topic, JSON.stringify(playload), (error) => {
           console.log(error);
         });
         console.log(this.client);
       } else if (this.menuType === 2) {
-        let topic = "Topic/sh1/box/10102020070001/system/settingMonitor";
+        let topic = "Topic/sh1/box/10102020080001/system/settingMonitor";
         this.monitorDataData.map((e) => {
           e.value = String.fromCharCode(e.value);
           return e;
         });
         let playload = {
           version: "1.1",
-          data: { ...this.monitorDataData },
+          data: { ...this.deleteKey(this.monitorDataData) },
         };
         this.client.publish(topic, JSON.stringify(playload));
         console.log(this.client);
       }
     },
     ota() {
-      let topic = "Topic/sh1/box/10102020070001/system/OTA";
+      let topic = "Topic/sh1/box/10102020080001/system/OTA";
       let playload = {
         version: "1.1",
         path: "121.40.99.207/static/connect-box/ConnectBox",
@@ -293,7 +334,7 @@ export default {
       console.log(this.client);
     },
     restart() {
-      let topic = "Topic/sh1/box/10102020070001/system/exit";
+      let topic = "Topic/sh1/box/10102020080001/system/exit";
       let playload = {
         version: "1.1",
         command: "exit",
@@ -308,15 +349,16 @@ export default {
     },
   },
   computed: {
-    client: function () {
+    client: function() {
       return this.$store.state.client;
     },
+    name: function() {},
   },
   mounted() {
     this.menuType = 1;
   },
   watch: {
-    menuType: function (val) {
+    menuType: function(val) {
       if (val === 1) {
         this.columns = this.monitorColumns;
         this.data = this.monitorData;

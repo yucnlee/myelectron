@@ -125,7 +125,7 @@ let webConfig = {
     },
     extensions: ['.js', '.vue', '.json', '.css']
   },
-  target: 'web'
+  target: 'web',
 }
 
 /**

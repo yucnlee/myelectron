@@ -13,19 +13,23 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     menuIndex: 999,
-    mqttArr: [],
+    mqttObj: [],
     client: {},
+    mode: 0,
   },
   mutations: {
     setMenuIndex(state, value) {
       state.menuIndex = value;
     },
     setMqttObj(state, obj) {
-      state.mqttArr.push(obj);
+      state.mqttObj = obj;
     },
     setClient(state, client) {
       state.client = client;
     },
+    setMode(state, mode) {
+      state.mode = mode;
+    }
   },
   modules,
   plugins: [

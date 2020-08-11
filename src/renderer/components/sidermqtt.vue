@@ -25,52 +25,35 @@
       :default-selected-keys="['0']"
       v-if="menuType === 1"
     >
-      <a-menu-item v-for="(item, index) in menuList" class="dfsa" :key="item.clientId">
-        <span :class="{ circlegreen: checkindex.includes(index) }" class="dib circlered"></span>
+      <a-menu-item
+        v-for="(item, index) in menuList"
+        class="dfsa"
+        :key="item.clientId"
+      >
+        <span
+          :class="{ circlegreen: checkindex.includes(index) }"
+          class="dib circlered"
+        ></span>
         <span class="dib">{{ item.clientId }}</span>
         <a-button
           v-if="!checkindex.includes(index)"
           size="small"
           type="primary"
-          @click.self="triConnection(item,index)"
+          @click.self="triConnection(item, index)"
           class="dib"
-        >发送连接</a-button>
+          :loading="loading"
+          >发送连接</a-button
+        >
         <a-button
           v-if="checkindex.includes(index)"
           size="small"
           type="primary"
-          @click.self="triDisConnection(item,index)"
+          @click.self="triDisConnection(item, index)"
           class="dib"
-        >断开连接</a-button>
+          >断开连接</a-button
+        >
       </a-menu-item>
     </a-menu>
-    <!-- <a-menu mode="inline" theme="dark" class="menu" v-if="menuType === 2"></a-menu>
-    <a-menu mode="inline" theme="dark" class="menu" v-if="menuType === 3"></a-menu>-->
-
-    <!-- <a-row type="flex" justify="space-around" class="side-bottom">
-      <a-col>
-        <a-dropdown>
-          <a-icon type="plus" class="pointer"></a-icon>
-          <a-menu slot="overlay">
-            <a-menu-item @click.native="openAddBoxDialog" key="001">
-              <a-icon type="plus"></a-icon>添加FBOX
-            </a-menu-item>
-          </a-menu>
-        </a-dropdown>
-      </a-col>
-      <a-col>
-        <a-icon type="folder" class="pointer"></a-icon>
-      </a-col>
-      <a-col>
-        <a-icon type="user" class="pointer"></a-icon>
-      </a-col>
-      <a-col>
-        <a-icon type="setting" class="pointer"></a-icon>
-      </a-col>
-      <a-col>
-        <a-icon type="home" class="pointer" @click="clickHome"></a-icon>
-      </a-col>
-    </a-row>-->
     <div class="side-bottom-div" @click="openMqttPage">
       <a-icon type="plus"></a-icon>
       <span>增加mqtt连接</span>
@@ -89,22 +72,14 @@ export default {
   data() {
     return {
       checkindex: [],
+      loading: false,
       // 设置menuitem status
       isOnone: true,
       isOntwo: false,
       isOnthree: false,
       menuType: 1,
       // 菜单组
-      menuList: [
-        {
-          host: "39.98.183.135",
-          port: "1883",
-          clientId: "10102020080001",
-          userName:
-            "highSpeedSheetMetalHydraulicPress|35490ef91bf3453b9c4c21520c26acb9",
-          passWord: "00feb014dea94117982dced560fc0462",
-        },
-      ],
+      menuList: [],
       // 控制显隐
       addBoxDialogVisible: false,
     };
@@ -150,36 +125,29 @@ export default {
       this.$router.push("/click");
     },
     async triConnection(item, index) {
-      // const url = "mqtt://39.98";
+      const url = "mqtt://" + item.host;
       const option = {
-        // port: 1883,
-        // username:
-        //   "highSpeedSheetMetalHydraulicPress|35490ef91bf3453b9c4c21520c26acb9",
-        // password: "00feb014dea94117982dced560fc0462",
-        // clientId: "10102020080001",
+        clientId: item.clientId,
+        username: item.userName,
+        password: item.passWord,
         reconnectPeriod: 0,
         keepalive: 9000,
       };
       let client = await mqtt.connect(url, option);
-      client.publish("/topic/hello", "hello");
-      client.on("reconnect", function (error) {
-        console.log("正在重连:", error);
-      });
-      client.on("error", (error) => {
-        console.log("连接失败", error);
-      });
-      await client.on("connect", () => {
-        console.log("publish");
-        console.log("conect", client);
+      this.loading = true;
+      client.on("connect", () => {
         this.checkindex.push(index);
+        this.$store.commit("setClient", client);
+        this.loading = false;
+        this.$message.success("连接成功");
       });
       client.on("close", () => {
-        console.log("close");
         let itemindex = this.checkindex.findIndex((e) => {
           return e == index;
         });
         this.checkindex.splice(itemindex, 1);
-        console.log(this.checkindex);
+        this.loading = false;
+        this.$message.error("连接错误,请确认输入信息无误");
       });
       client.on("packetreceive", (packetreceive) => {
         return console.log(packetreceive);
@@ -189,7 +157,6 @@ export default {
         console.log(message.toString());
       });
       console.log(client);
-      this.$store.commit("setClient", client);
     },
     triDisConnection(item, index) {
       let itemindex = this.checkindex.findIndex((e) => {
@@ -203,8 +170,16 @@ export default {
     },
   },
   computed: {
-    client: function () {
+    client: function() {
       return this.$store.state.client;
+    },
+    mqttObj: function() {
+      return this.$store.state.mqttObj;
+    },
+  },
+  watch: {
+    mqttObj: function(newval) {
+      this.menuList.push(newval);
     },
   },
 };

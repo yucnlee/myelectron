@@ -63,6 +63,11 @@
         </a-col>
       </a-row>
     </a-form-model>
+    <a-row>
+      <a-form-model-item label="value">
+        <a-input placeholer v-model.number="form.value" />
+      </a-form-model-item>
+    </a-row>
     <template slot="footer">
       <a-button type="primary" @click="ensure" v-if="isAdd">新增</a-button>
       <a-button type="primary" @click="edit" v-if="!isAdd">修改</a-button>
@@ -73,7 +78,6 @@
 
 <script>
 export default {
-  name: "addCollectDialog",
   props: ["visible", "itemForm", "isAdd", "flag"],
   data() {
     return {
@@ -84,22 +88,47 @@ export default {
         dbtype: "",
         pos: "",
         bit: "",
+        value: "",
       },
     };
   },
   methods: {
     cancel() {
       this.$emit("cancel");
-      this.form = {};
+      this.form = {
+        name: "",
+        areatype: "",
+        db: "",
+        dbtype: "",
+        pos: "",
+        bit: "",
+        value: "",
+      };
     },
     ensure() {
       this.$emit("ensure", this.form);
-      this.form = {};
+      this.form = {
+        name: "",
+        areatype: "",
+        db: "",
+        dbtype: "",
+        pos: "",
+        bit: "",
+        value: "",
+      };
     },
     edit() {
       this.$emit("edit", this.form);
       this.$emit("cancel");
-      this.form = {};
+      this.form = {
+        name: "",
+        areatype: "",
+        db: "",
+        dbtype: "",
+        pos: "",
+        bit: "",
+        value: "",
+      };
     },
   },
   watch: {

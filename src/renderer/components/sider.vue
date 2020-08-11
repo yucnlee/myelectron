@@ -1,9 +1,6 @@
 <template>
   <a-layout-sider class="sider">
-    <a-input placeholder="请输入FBox序列号,端口号" style="margin: 10px 0;">
-      <a-icon type="search" slot="suffix" style="cursor:pointer;"></a-icon>
-    </a-input>
-    <a-row
+    <!-- <a-row
       type="flex"
       justify="space-around"
       style="line-height:30px;font-size:20px;text-align:center;background-color:WhiteSmoke;"
@@ -17,94 +14,55 @@
       <a-col :span="6" class="three" :class="{ on: isOnthree }" @click="three">
         <a-icon type="warning"></a-icon>
       </a-col>
-    </a-row>
+    </a-row>-->
+    <div class="sider-header">
+      <span>盒子菜单</span>
+    </div>
     <a-menu
       mode="inline"
       class="menu"
-      :default-open-keys="['sub2']"
       :default-selected-keys="['0']"
       v-if="menuType === 1"
     >
-      <a-sub-menu key="sub1" title="默认组">
-        <a-menu-item key="01">默认组</a-menu-item>
-      </a-sub-menu>
-      <a-sub-menu key="sub2" class="submenu">
-        <span slot="title">水泥设计</span>
-        <a-menu-item
-          v-for="(item, index) in menuList"
-          class="dfsa"
-          @click="openTbaleComponent(index)"
-          :key="item.ip"
+      <a-menu-item
+        v-for="(item, index) in menuList"
+        class="dfsa"
+        @click="openTbaleComponent(index)"
+        :key="item.ip"
+      >
+        <span
+          :class="{ circlegreen: checkindex.includes(index) }"
+          class="dib circlered"
+        ></span>
+        <span class="dib">{{ item.name }}</span>
+        <a-button
+          size="small"
+          type="primary"
+          @click.self="triConnection(item.ip, item.port, index)"
+          v-if="!checkindex.includes(index)"
+          class="dib"
+          :loading="loadingArr[index] == 1"
+          >发送连接</a-button
         >
-          <span
-            :class="{ circlegreen: checkindex.includes(index) }"
-            class="dib circlered"
-          ></span>
-          <span class="dib">{{ item.name }}</span>
-          <a-button
-            size="small"
-            type="primary"
-            @click.self="triConnection(item.ip, item.port, index)"
-            v-if="!checkindex.includes(index)"
-            class="dib"
-          >
-            发送连接
-          </a-button>
-          <a-button
-            size="small"
-            type="primary"
-            @click.self="triDisconnection(index)"
-            v-if="checkindex.includes(index)"
-            class="dib"
-          >
-            断开连接
-          </a-button>
-        </a-menu-item>
-      </a-sub-menu>
+        <a-button
+          size="small"
+          type="primary"
+          @click.self="triDisconnection(index)"
+          v-if="checkindex.includes(index)"
+          class="dib"
+          >断开连接</a-button
+        >
+      </a-menu-item>
     </a-menu>
-    <a-menu
-      mode="inline"
-      theme="dark"
-      class="menu"
-      v-if="menuType === 2"
-    ></a-menu>
-    <a-menu
-      mode="inline"
-      theme="dark"
-      class="menu"
-      v-if="menuType === 3"
-    ></a-menu>
-    <a-row type="flex" justify="space-around" class="side-bottom">
-      <a-col>
-        <a-dropdown>
-          <a-icon type="plus" class="pointer"></a-icon>
-          <a-menu slot="overlay">
-            <a-menu-item @click.native="openAddBoxDialog" key="001">
-              <a-icon type="plus"></a-icon>
-              添加FBOX
-            </a-menu-item>
-          </a-menu>
-        </a-dropdown>
-      </a-col>
-      <a-col>
-        <a-icon type="folder" class="pointer"></a-icon>
-      </a-col>
-      <a-col>
-        <a-icon type="user" class="pointer"></a-icon>
-      </a-col>
-      <a-col>
-        <a-icon type="setting" class="pointer"></a-icon>
-      </a-col>
-      <a-col>
-        <a-icon type="home" class="pointer" @click="clickHome"></a-icon>
-      </a-col>
-    </a-row>
+    <div class="side-bottom-div" @click="openAddBoxDialog">
+      <a-icon type="plus"></a-icon>
+      <span>添加盒子</span>
+    </div>
     <addBoxDialog
       :visible="addBoxDialogVisible"
       @cancel="cancelAddBoxDialog"
       @ensure="ensureAddboxDialog"
-    >
-    </addBoxDialog>
+    ></addBoxDialog>
   </a-layout-sider>
 </template>
 
@@ -118,26 +76,15 @@ export default {
   data() {
     return {
       checkindex: [],
+      loadingArr: [],
+      testArr: ["hello", "world"],
       // 设置menuitem status
       isOnone: true,
       isOntwo: false,
       isOnthree: false,
       menuType: 1,
       // 菜单组
-      menuList: [
-        {
-          key: "0",
-          name: "李金玉pc",
-          ip: "192.168.8.69",
-          port: "8234",
-        },
-        {
-          key: "1",
-          name: "高金鑫pc",
-          ip: "192.168.4.46",
-          port: "10002",
-        },
-      ],
+      menuList: [],
       // 控制显隐
       addBoxDialogVisible: false,
     };
@@ -154,6 +101,7 @@ export default {
     },
     ensureAddboxDialog(obj) {
       let li = this.deepClone(obj);
+      this.menuList.splice(0, this.menuList.length);
       this.menuList.push(li);
       for (let i = 0; i < this.menuList.length; i++) {
         this.menuList[i].key = i.toString();
@@ -195,17 +143,34 @@ export default {
     clickHome() {
       this.$router.push("/click");
     },
-    async triConnection(host, port, index) {
-      let res = await sponsporedLinks(host, port, index);
-      this.checkindex.push(res.data.index);
-    },
-    async triDisconnection(index) {
-      let res = await disconnect(index);
-      let i = this.checkindex.findIndex((e) => {
-        return index == e;
+    triConnection(host, port, index) {
+      this.$electron.ipcRenderer.send("connect", host, port, index);
+      this.loadingArr.splice(index, 1, 1);
+      console.log(this.loadingArr);
+      this.$electron.ipcRenderer.once("connect", (event, index) => {
+        this.checkindex.push(index);
+        this.$set(this.loadingArr, index, 0);
+        this.$message.success("连接成功");
       });
-      this.checkindex.splice(i, 1);
+      this.$electron.ipcRenderer.once("error", () => {
+        this.$message.error("连接失败,请确认盒子正常运行中");
+        this.$set(this.loadingArr, index, 0);
+      });
     },
+    triDisconnection(index) {
+      this.$electron.ipcRenderer.send("disConnect", index);
+      this.$electron.ipcRenderer.on("disConnect", (event, index) => {
+        let i = this.checkindex.findIndex((e) => {
+          return e === index;
+        });
+        this.checkindex.splice(i, 1);
+      });
+    },
+  },
+  mounted() {
+    this.loadingArr = this.menuList.map((e) => {
+      return 0;
+    });
   },
 };
 </script>
@@ -256,6 +221,27 @@ body {
   font-family: "Source Sans Pro", sans-serif;
 }
 
+.side-bottom-div {
+  text-align: center;
+  line-height: 40px;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  border-top: 1px solid gray;
+  background-color: #34c388;
+  color: whitesmoke;
+  cursor: pointer;
+}
+
+.sider-header {
+  height: 46px;
+  margin: 0 0 4px 0;
+  line-height: 46px;
+  text-align: center;
+  background-color: gray;
+  color: #34c388;
+}
+
 #wrapper {
   background: radial-gradient(
     ellipse at top left,
@@ -277,6 +263,9 @@ body {
 .ant-layout-sider {
   height: 100%;
   background-color: white;
+}
+.ant-menu {
+  border-top: 1px solid #e8e8e8;
 }
 
 .wrapper-header {

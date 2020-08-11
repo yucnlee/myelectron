@@ -9,7 +9,6 @@
       >
         <a-menu-item key="1" @click="getDevTable">设备信息</a-menu-item>
         <a-menu-item key="2" @click="getCollectTable">采集点信息</a-menu-item>
-        <a-menu-item key="3" @click="getMqttTable">mqtt信息</a-menu-item>
       </a-menu>
       <a-table
         :columns="columns"
@@ -28,7 +27,7 @@
           <a-icon
             type="edit"
             class="pointer dib"
-            @click="onedit(record)"
+            @click="edit(record)"
           ></a-icon>
           <!-- <a-icon type="copy" class="pointer dib"></a-icon> -->
           <a-popconfirm
@@ -41,15 +40,17 @@
           </a-popconfirm>
         </span>
       </a-table>
+      <div v-if="menuType === 1" class="devInfo">
+        <a-tag color="#f50"
+          >设备信息有且只能有一条,新增信息会覆盖当前信息</a-tag
+        >
+      </div>
     </a-layout-content>
     <a-layout-footer>
       <a-row class="action">
-        <a-button type="primary" icon="plus" @click="openDialog(menuType)"
-          >新建信息</a-button
-        >
-        <a-button type="primary" icon="menu-unfold" @click="setConfig"
-          >生成配置文件</a-button
-        >
+        <a-button type="primary" icon="plus" @click="openDialog(menuType)">{{
+          buttonTxt
+        }}</a-button>
         <a-button type="primary" icon="copy" @click="sendMsg">发送</a-button>
       </a-row>
     </a-layout-footer>
@@ -60,8 +61,8 @@
       :flag="flag"
       @cancel="cancelAddDevDialog"
       @ensure="ensureAddDevDialog"
-    >
-    </addDevDialog>
+      @edit="onedit"
+    ></addDevDialog>
     <addCollectDialog
       :visible="addCollectDialogVisible"
       :itemForm="itemForm"
@@ -69,16 +70,8 @@
       :flag="flag"
       @cancel="cancelAddCollectDialog"
       @ensure="ensureAddCollectDialog"
+      @edit="onedit"
     ></addCollectDialog>
-    <addMqttDialog
-      :visible="addMqttDialogVisible"
-      :itemForm="itemForm"
-      :isAdd="isAdd"
-      :flag="flag"
-      @cancel="cancelAddMqttDialog"
-      @ensure="ensureAddMqttDialog"
-    >
-    </addMqttDialog>
   </div>
 </template>
 
@@ -91,10 +84,8 @@ import { send } from "@/api/index";
 export default {
   props: [],
   components: {
-    addMonitorDialog,
     addDevDialog,
     addCollectDialog,
-    addMqttDialog,
   },
   data() {
     return {
@@ -103,55 +94,7 @@ export default {
       addCollectDialogVisible: false,
       addMqttDialogVisible: false,
       menuType: 1,
-      columns: [
-        {
-          title: "状态",
-          dataIndex: "status",
-          key: "status",
-          scopedSlots: {
-            customRender: "status",
-          },
-          align: "center",
-        },
-        {
-          title: "名称",
-          dataIndex: "name",
-          key: "name",
-          align: "center",
-        },
-        {
-          title: "数值",
-          dataIndex: "number",
-          key: "number",
-          align: "center",
-        },
-        {
-          title: "地址",
-          dataIndex: "adress",
-          key: "adresss",
-          align: "center",
-        },
-        {
-          title: "省流量",
-          dataIndex: "isSaveTraffic",
-          key: "isSaveTraffic",
-          align: "center",
-        },
-        {
-          title: "描述",
-          dataIndex: "description",
-          key: "description",
-          align: "center",
-        },
-        {
-          title: "Action",
-          key: "action",
-          scopedSlots: {
-            customRender: "action",
-          },
-          align: "center",
-        },
-      ],
+      columns: [],
       columnsDev: [
         {
           title: "protocol",
@@ -279,113 +222,16 @@ export default {
           ellipsis: true,
         },
       ],
-      columnsMqtt: [
-        {
-          title: "add",
-          dataIndex: "add",
-          key: "addadd",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "port",
-          dataIndex: "port",
-          key: "port",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "pub_topic",
-          dataIndex: "pub_topic",
-          key: "pub_topic",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "sub_topic",
-          dataIndex: "sub_topic",
-          key: "sub_topic",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "user_name",
-          dataIndex: "user_name",
-          key: "user_name",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "pass_word",
-          dataIndex: "pass_word",
-          key: "pass_word",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "client_id",
-          dataIndex: "client_id",
-          key: "client_id",
-          align: "center",
-          ellipsis: true,
-        },
-        {
-          title: "操作",
-          key: "action",
-          scopedSlots: {
-            customRender: "action",
-          },
-          align: "center",
-        },
-      ],
       data: [],
-      dataDev: [
+      dataArr: [
         {
-          key: "0",
-          protocol: "S7",
-          connectType: "Tcp",
-          slavePort: 1,
-          baudRate: 1500000,
-          ipAddr: "192.168.1.230",
-          port: "502",
-          rack: 0,
-          slot: 1,
-          intervalTime: 200,
+          dataDev: [],
+          dataCollect: [],
         },
       ],
-      dataCollect: [
-        {
-          key: "0",
-          name: "温度",
-          areatype: "DB",
-          db: 1,
-          dbtype: 5,
-          pos: 0,
-          bit: 0,
-        },
-        {
-          key: "1",
-          name: "温度",
-          areatype: "DB",
-          db: 1,
-          dbtype: 5,
-          pos: 0,
-          bit: 0,
-        },
-      ],
-      dataMqtt: [
-        {
-          key: "0",
-          add: "39.98.183.135",
-          port: "1883",
-          pub_topic: "upload_data/highSpeedSheetMetalHydraulicPress/V1312345/",
-          sub_topic: "update_status/:productName/:deviceName/",
-          user_name:
-            "highSpeedSheetMetalHydraulicPress|35490ef91bf3453b9c4c21520c26acb9",
-          pass_word: "00feb014dea94117982dced560fc0462",
-          client_id: "V13",
-        },
-      ],
+      dataDev: [],
+      dataCollect: [],
+      buttonTxt: "新增设备信息",
       flag: true,
       isAdd: true,
       itemForm: {},
@@ -397,45 +243,42 @@ export default {
         this.addDevDialogVisible = true;
       } else if (this.menuType === 2) {
         this.addCollectDialogVisible = true;
-      } else if (this.menuType === 3) {
-        this.addMqttDialogVisible = true;
       }
     },
-    setConfig() {},
+    deleteKey(arr) {
+      let newArr = this.deepClone(arr);
+      newArr.map((e) => {
+        delete e.key;
+        return e;
+      });
+      return newArr;
+    },
     async sendMsg() {
       if (this.menuType === 1) {
         let playload = {
-          Device: this.dataDev[0],
+          Device: this.deleteKey(this.dataDev)[0],
         };
-        // let code = "020"
         let msg = JSON.stringify(playload);
         let code = "020";
-        await send(this.menuIndex, code, msg);
+        this.$electron.ipcRenderer.send("sendMsg", this.menuIndex, code, msg);
       } else if (this.menuType === 2) {
         let snap7 = {
           version: "1.1",
-          data: [...this.dataCollect],
+          data: [...this.deleteKey(this.dataCollect)],
         };
         let code = "030";
         let msg = JSON.stringify(snap7);
-        await send(this.menuIndex, code, msg);
+        this.$electron.ipcRenderer.send("sendMsg", this.menuIndex, code, msg);
       }
     },
     cancelAddDevDialog() {
       this.addDevDialogVisible = false;
+      this.isAdd = true;
     },
-    ensureAddDevDialog(obj) {
-      this.dataDev.splice(0);
-      this.dataDev.push(obj);
-      this.dataDev.forEach((e, i) => {
-        e.key = "dev" + i;
-        return e;
-      });
-      localStorage.setItem("dataDev", JSON.stringify(this.dataDev));
-      this.cancelAddDevDialog();
-    },
+    ensureAddDevDialog(form) {},
     cancelAddCollectDialog() {
       this.addCollectDialogVisible = false;
+      this.isAdd = true;
     },
     ensureAddCollectDialog(obj) {
       this.dataCollect.push(obj);
@@ -445,34 +288,18 @@ export default {
       });
       this.cancelAddCollectDialog();
     },
-    cancelAddMqttDialog() {
-      this.addMqttDialogVisible = false;
-    },
-    ensureAddMqttDialog(obj) {
-      this.dataMqtt.splice(0);
-      this.dataMqtt.push(obj);
-      this.dataDev.forEach((e, i) => {
-        e.key = "mqtt" + i;
-        return e;
-      });
-      localStorage.setItem("dataMqtt", JSON.stringify(this.dataMqtt));
-      this.cancelAddMqttDialog();
-    },
-    cancelAddMonitorDialog() {
-      this.addMonitorDialogVisible = false;
-    },
-    ensureAddMonitorDialog() {},
     // 表格切换函数
     getDevTable() {
       this.menuType = 1;
       this.columns = this.columnsDev;
       this.data = this.dataDev;
+      this.buttonTxt = "新增设备信息";
     },
     getCollectTable() {
       this.menuType = 2;
       this.columns = this.columnsCollect;
       this.data = this.dataCollect;
-      console.log("collect");
+      this.buttonTxt = "新增采集点信息";
     },
     getMqttTable() {
       this.menuType = 3;
@@ -485,12 +312,33 @@ export default {
         return e.key != key;
       });
     },
-    onedit(record) {
+    edit(record) {
       this.openDialog();
       this.isAdd = false;
       this.itemForm = record;
       this.flag = !this.flag;
-      console.log(this.itemForm);
+    },
+    onedit(form) {
+      const target = this.data.findIndex((e) => {
+        return e.key === this.form.key;
+      });
+      this.data.splice(target, 1, form);
+      this.isAdd = true;
+    },
+    deepClone(obj) {
+      let cloneObj = Array.isArray(obj) ? [] : {};
+      if (obj && typeof obj === "object") {
+        for (var key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            if (obj[key] && typeof obj[key] === "object") {
+              cloneObj[key] = this.deepClone(obj[key]);
+            } else {
+              cloneObj[key] = obj[key];
+            }
+          }
+        }
+      }
+      return cloneObj;
     },
   },
   computed: {
@@ -500,6 +348,7 @@ export default {
   },
   mounted() {
     this.getDevTable();
+    this.buttonTxt = "新增设备信息";
   },
 };
 </script>
@@ -521,7 +370,6 @@ export default {
 }
 
 .table-menu {
-  margin-top: 5px;
   margin-bottom: 4px;
   padding: 0 15px;
 }
@@ -540,5 +388,10 @@ export default {
   width: 10px;
   height: 10px;
   margin: 0 auto;
+}
+
+.devInfo {
+  margin-top: 30px;
+  margin-left: 15px;
 }
 </style>

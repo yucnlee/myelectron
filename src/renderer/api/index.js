@@ -1,8 +1,9 @@
 const axios = require('axios');
+let url = "http://127.0.0.1:3000"
 
 function sponsporedLinks(host, port, index) {
   return axios({
-    url: '/api/sponsporedLinks',
+    url: url + '/sponsporedLinks',
     method: 'post',
     data: {
       host,
@@ -14,7 +15,7 @@ function sponsporedLinks(host, port, index) {
 
 function disconnect(index) {
   return axios({
-    url: "/api/disconnect",
+    url: url + "/disconnect",
     method: "post",
     data: {
       index,
@@ -24,7 +25,7 @@ function disconnect(index) {
 
 function send(index, code, msg) {
   return axios({
-    url: "/api/send",
+    url: url + "/send",
     method: "post",
     data: {
       index,

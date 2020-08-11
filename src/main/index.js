@@ -1,12 +1,16 @@
 import {
   app,
-  BrowserWindow
+  BrowserWindow,
+  Menu,
 } from 'electron'
 
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
+app.commandLine.appendSwitch("no-proxy-server");
+Menu.setApplicationMenu(null)
+
 if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
@@ -24,6 +28,7 @@ function createWindow() {
     height: 563,
     useContentSize: true,
     width: 1000,
+    frame: false,
     webPreferences: {
       nodeIntegration: true
     }
@@ -31,14 +36,14 @@ function createWindow() {
 
   mainWindow.loadURL(winURL)
 
-  //  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
   mainWindow.on('closed', () => {
     mainWindow = null
   })
 }
 
 app.on('ready', createWindow)
-require('./indexnode');
+require('./ipc');
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
