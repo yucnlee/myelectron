@@ -1,15 +1,80 @@
 <template>
-  <div>
-    <a-layout-content>
-      <a-menu
+  <div class="page-wriedData">
+    <div>
+      <el-menu
         mode="horizontal"
-        theme="dark"
-        :default-selected-keys="['1']"
         class="table-menu"
+        background-color="#545c64"
+        text-color="#fff"
+        active-text-color="#ffd04b"
+        default-active="1"
       >
-        <a-menu-item key="1" @click="getDevTable">设备信息</a-menu-item>
-        <a-menu-item key="2" @click="getCollectTable">采集点信息</a-menu-item>
-      </a-menu>
+        <el-menu-item @click="getDevTable" index="1">设备信息</el-menu-item>
+        <el-menu-item index="2" @click="getCollectTable">采集点信息</el-menu-item>
+      </el-menu>
+      <el-form
+        class="devform"
+        :model="form"
+        label-position="right"
+        label-width="80px"
+        v-if="menuType === 1"
+      >
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="protocol">
+              <el-input type="input" v-model="form.protocol"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="connectType">
+              <el-input type="input" v-model="form.connectType"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="slavePort">
+              <el-input type="input" v-model="form.slavePort"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="baudRate">
+              <el-input type="input" v-model="form.baudRate"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="ipAddr">
+              <el-input type="input" v-model="form.ipAddr"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="port">
+              <el-input type="input" v-model="form.port"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="rack">
+              <el-input type="input" v-model="form.rack"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="slot">
+              <el-input type="input" v-model="form.slot"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="24">
+          <el-col :span="24">
+            <el-form-item label="intervalTime">
+              <el-input type="input" v-model="form.intervalTime"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
       <a-table
         :columns="columns"
         :data-source="data"
@@ -17,6 +82,7 @@
         bordered
         :scroll="{}"
         :pagination="false"
+        v-if="menuType===2"
       >
         <span slot="status" slot-scope="text">
           <div class="circlegreen" v-if="text == 1"></div>
@@ -24,12 +90,7 @@
         </span>
 
         <span slot="action" slot-scope="text, record" class="dfsa">
-          <a-icon
-            type="edit"
-            class="pointer dib"
-            @click="edit(record)"
-          ></a-icon>
-          <!-- <a-icon type="copy" class="pointer dib"></a-icon> -->
+          <a-icon type="edit" class="pointer dib" @click="edit(record)"></a-icon>
           <a-popconfirm
             title="确定删除该条信息"
             ok-text="确定"
@@ -40,29 +101,17 @@
           </a-popconfirm>
         </span>
       </a-table>
-      <div v-if="menuType === 1" class="devInfo">
-        <a-tag color="#f50"
-          >设备信息有且只能有一条,新增信息会覆盖当前信息</a-tag
-        >
-      </div>
-    </a-layout-content>
+    </div>
     <a-layout-footer>
       <a-row class="action">
-        <a-button type="primary" icon="plus" @click="openDialog(menuType)">{{
+        <a-button type="primary" icon="plus" @click="openDialog(menuType)">
+          {{
           buttonTxt
-        }}</a-button>
+          }}
+        </a-button>
         <a-button type="primary" icon="copy" @click="sendMsg">发送</a-button>
       </a-row>
     </a-layout-footer>
-    <addDevDialog
-      :visible="addDevDialogVisible"
-      :itemForm="itemForm"
-      :isAdd="isAdd"
-      :flag="flag"
-      @cancel="cancelAddDevDialog"
-      @ensure="ensureAddDevDialog"
-      @edit="onedit"
-    ></addDevDialog>
     <addCollectDialog
       :visible="addCollectDialogVisible"
       :itemForm="itemForm"
@@ -89,6 +138,7 @@ export default {
   },
   data() {
     return {
+      form: {},
       addMonitorDialogVisible: false,
       addDevDialogVisible: false,
       addCollectDialogVisible: false,
@@ -223,13 +273,6 @@ export default {
         },
       ],
       data: [],
-      dataArr: [
-        {
-          dataDev: [],
-          dataCollect: [],
-        },
-      ],
-      dataDev: [],
       dataCollect: [],
       buttonTxt: "新增设备信息",
       flag: true,
@@ -256,7 +299,7 @@ export default {
     async sendMsg() {
       if (this.menuType === 1) {
         let playload = {
-          Device: this.deleteKey(this.dataDev)[0],
+          Device: this.form,
         };
         let msg = JSON.stringify(playload);
         let code = "020";
@@ -264,7 +307,7 @@ export default {
       } else if (this.menuType === 2) {
         let snap7 = {
           version: "1.1",
-          data: [...this.deleteKey(this.dataCollect)],
+          data: [...this.dataCollect],
         };
         let code = "030";
         let msg = JSON.stringify(snap7);
@@ -282,10 +325,6 @@ export default {
     },
     ensureAddCollectDialog(obj) {
       this.dataCollect.push(obj);
-      this.dataDev.forEach((e, i) => {
-        e.key = "Col" + i;
-        return e;
-      });
       this.cancelAddCollectDialog();
     },
     // 表格切换函数
@@ -342,7 +381,7 @@ export default {
     },
   },
   computed: {
-    menuIndex: function() {
+    menuIndex: function () {
       return this.$store.state.menuIndex;
     },
   },
@@ -354,24 +393,30 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.page-wriedData {
+  height: 100%;
+  width: 100%;
+}
+.devform {
+  margin-top: 60px;
+  padding: 0 15px;
+}
 .ant-layout-header {
   background-color: #f0f2f5;
 }
 
-// .ant-table-wrapper /deep/ .ant-table {
-//   min-height: 500px !important;
-//   text-align: center!important;
-// }
-
-.ant-table-wrapper /deep/.ant-table-pagination {
-  position: absolute;
-  bottom: 6px;
-  right: 0;
-}
-
 .table-menu {
+  margin-top: 0 !important;
   margin-bottom: 4px;
   padding: 0 15px;
+  height: 46px;
+  line-height: 46px;
+  box-sizing: content-box;
+
+  li {
+    height: 100%;
+    line-height: 46px;
+  }
 }
 
 // .action{

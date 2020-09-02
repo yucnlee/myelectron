@@ -1,61 +1,39 @@
 <template>
-  <a-layout-sider class="sider">
-    <!-- <a-row
-      type="flex"
-      justify="space-around"
-      style="line-height:30px;font-size:20px;text-align:center;background-color:WhiteSmoke;"
-    >
-      <a-col :span="6" :class="{ on: isOnone }" class="one" @click="one">
-        <a-icon type="menu-unfold"></a-icon>
-      </a-col>
-      <a-col :span="6" class="two" :class="{ on: isOntwo }" @click="two">
-        <a-icon type="heart"></a-icon>
-      </a-col>
-      <a-col :span="6" class="three" :class="{ on: isOnthree }" @click="three">
-        <a-icon type="warning"></a-icon>
-      </a-col>
-    </a-row>-->
+  <div class="side">
     <div class="sider-header">
-      <span>盒子菜单</span>
+      <div>
+        <span>盒子菜单</span>
+      </div>
+      <div class="mode">
+        <a-select class="modeselect" v-model="mode">
+          <a-select-option value="1">有线</a-select-option>
+          <a-select-option value="2">无线</a-select-option>
+        </a-select>
+      </div>
     </div>
-    <a-menu
-      mode="inline"
-      class="menu"
-      :default-selected-keys="['0']"
-      v-if="menuType === 1"
-    >
-      <a-menu-item
-        v-for="(item, index) in menuList"
-        class="dfsa"
-        @click="openTbaleComponent(index)"
-        :key="item.ip"
-      >
-        <span
-          :class="{ circlegreen: checkindex.includes(index) }"
-          class="dib circlered"
-        ></span>
+    <el-menu mode="inline" class="menu" v-if="menuType === 1">
+      <el-menu-item v-for="(item, index) in menuList" class="dfsa" :key="item.ip">
+        <span :class="{ circlegreen: checkindex.includes(index) }" class="dib circlered"></span>
         <span class="dib">{{ item.name }}</span>
-        <a-button
-          size="small"
+        <el-button
+          size="middle"
           type="primary"
-          @click.self="triConnection(item.ip, item.port, index)"
+          @click="triConnection(item.ip, item.port, index)"
           v-if="!checkindex.includes(index)"
           class="dib"
           :loading="loadingArr[index] == 1"
-          >发送连接</a-button
-        >
-        <a-button
+        >发送连接</el-button>
+        <el-button
           size="small"
           type="primary"
-          @click.self="triDisconnection(index)"
+          @click="triDisconnection(index)"
           v-if="checkindex.includes(index)"
           class="dib"
-          >断开连接</a-button
-        >
-      </a-menu-item>
-    </a-menu>
-    <div class="side-bottom-div" @click="openAddBoxDialog">
-      <a-icon type="plus"></a-icon>
+        >断开连接</el-button>
+      </el-menu-item>
+    </el-menu>
+    <div class="side-bottom" @click="openAddBoxDialog">
+      <i class="el-icon-plus"></i>
       <span>添加盒子</span>
     </div>
     <addBoxDialog
@@ -63,7 +41,7 @@
       @cancel="cancelAddBoxDialog"
       @ensure="ensureAddboxDialog"
     ></addBoxDialog>
-  </a-layout-sider>
+  </div>
 </template>
 
 <script>
@@ -77,7 +55,7 @@ export default {
     return {
       checkindex: [],
       loadingArr: [],
-      testArr: ["hello", "world"],
+      mode: "",
       // 设置menuitem status
       isOnone: true,
       isOntwo: false,
@@ -147,6 +125,7 @@ export default {
       this.$electron.ipcRenderer.send("connect", host, port, index);
       this.loadingArr.splice(index, 1, 1);
       console.log(this.loadingArr);
+      console.log("connect++++");
       this.$electron.ipcRenderer.once("connect", (event, index) => {
         this.checkindex.push(index);
         this.$set(this.loadingArr, index, 0);
@@ -158,6 +137,7 @@ export default {
       });
     },
     triDisconnection(index) {
+      console.log("dicconnect");
       this.$electron.ipcRenderer.send("disConnect", index);
       this.$electron.ipcRenderer.on("disConnect", (event, index) => {
         let i = this.checkindex.findIndex((e) => {
@@ -171,6 +151,12 @@ export default {
     this.loadingArr = this.menuList.map((e) => {
       return 0;
     });
+    this.mode = "1";
+  },
+  watch: {
+    mode: function (val) {
+      this.$store.commit("setMode", val);
+    },
   },
 };
 </script>
@@ -221,7 +207,12 @@ body {
   font-family: "Source Sans Pro", sans-serif;
 }
 
-.side-bottom-div {
+.side {
+  position: relative;
+  height: 100%;
+}
+
+.side-bottom {
   text-align: center;
   line-height: 40px;
   position: absolute;
@@ -240,6 +231,8 @@ body {
   text-align: center;
   background-color: gray;
   color: #34c388;
+  display: flex;
+  justify-content: space-around;
 }
 
 #wrapper {
@@ -252,35 +245,10 @@ body {
   width: 100vw;
 }
 
-.ant-layout {
-  height: 100%;
-}
-
-.ant-layout-header {
-  background-color: white;
-}
-
-.ant-layout-sider {
-  height: 100%;
-  background-color: white;
-}
-.ant-menu {
-  border-top: 1px solid #e8e8e8;
-}
-
 .wrapper-header {
   background-color: white;
   line-height: 40px;
   border-bottom: 0.5px solid gray;
-}
-
-.side-bottom {
-  position: absolute;
-  bottom: 1px;
-  width: 100%;
-  line-height: 40px;
-  font-size: 20px;
-  border-top: 1px solid gray;
 }
 
 .helpinfo span {
@@ -295,5 +263,18 @@ body {
 .two,
 .three {
   cursor: pointer;
+}
+</style>
+
+<style>
+.modeselect .ant-select-selection {
+  border: 0;
+  border-radius: 0;
+  box-shadow: 0px 0px 0px 0px;
+  color: green;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  background-color: gray;
 }
 </style>

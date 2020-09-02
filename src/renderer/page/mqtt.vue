@@ -1,29 +1,20 @@
 <template>
   <div>
     <a-layout-content>
-      <a-menu
+      <el-menu
         mode="horizontal"
-        theme="dark"
-        :default-selected-keys="['1']"
         class="table-menu"
+        background-color="#545c64"
+        text-color="#fff"
+        active-text-color="#ffd04b"
+        default-active="1"
       >
-        <a-menu-item key="1" @click="setMenuType(1)">设置监控点</a-menu-item>
-        <a-menu-item key="2" @click="setMenuType(2)"
-          >设置监控点数据</a-menu-item
-        >
-      </a-menu>
-      <a-table
-        :columns="columns"
-        :data-source="data"
-        :pagination="false"
-        bordered
-      >
+        <el-menu-item @click="setMenuType(1)" index="1">设置监控点</el-menu-item>
+        <el-menu-item @click="setMenuType(2)" index="2">设置监控点数据</el-menu-item>
+      </el-menu>
+      <a-table :columns="columns" :data-source="data" :pagination="false" bordered>
         <span slot="action" slot-scope="text, record" class="dfsa">
-          <a-icon
-            type="edit"
-            class="pointer dib"
-            @click="edit(record)"
-          ></a-icon>
+          <a-icon type="edit" class="pointer dib" @click="edit(record)"></a-icon>
           <!-- <a-icon type="copy" class="pointer dib"></a-icon> -->
           <a-popconfirm
             title="确定删除该条信息"
@@ -39,9 +30,7 @@
 
     <a-layout-footer>
       <a-row class="action">
-        <a-button type="primary" icon="plus" @click="openDialog(menuType)"
-          >添加数据</a-button
-        >
+        <a-button type="primary" icon="plus" @click="openDialog(menuType)">添加数据</a-button>
         <a-button type="primary" icon="copy" @click="publishToptic">
           <span>{{ buttonTxt }}</span>
         </a-button>
@@ -263,10 +252,10 @@ export default {
     },
     ensureAddCollectDataDialog(obj) {
       this.monitorDataData.push(obj);
-      this.monitorDataData.forEach((e, i) => {
-        e.key = "Col" + i;
-        return e;
-      });
+      // this.monitorDataData.forEach((e, i) => {
+      //   e.key = "Col" + i;
+      //   return e;
+      // });
       this.cancelAddCollectDataDialog();
     },
     cancelAddCollectDataDialog() {
@@ -312,8 +301,9 @@ export default {
         });
         let playload = {
           version: "1.1",
-          data: { ...this.deleteKey(this.monitorDataData) },
+          data: { ...this.monitorDataData },
         };
+        console.log(playload);
         this.client.publish(topic, JSON.stringify(playload));
         console.log(this.client);
       }
@@ -349,16 +339,16 @@ export default {
     },
   },
   computed: {
-    client: function() {
+    client: function () {
       return this.$store.state.client;
     },
-    name: function() {},
+    name: function () {},
   },
   mounted() {
     this.menuType = 1;
   },
   watch: {
-    menuType: function(val) {
+    menuType: function (val) {
       if (val === 1) {
         this.columns = this.monitorColumns;
         this.data = this.monitorData;
@@ -390,9 +380,13 @@ export default {
 }
 
 .table-menu {
-  margin-top: 5px;
   margin-bottom: 4px;
   padding: 0 15px;
+  height: 46px;
+  li {
+    height: 100%;
+    line-height: 46px;
+  }
 }
 
 // .action{

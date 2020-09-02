@@ -8,6 +8,7 @@ ipcMain.on("ping", () => {
 
 ipcMain.on("connect", (event, host, port, index) => {
     let socket = sponsoredLinks(host, port)
+    console.log("host")
 
     socket.on("connect", () => {
         event.sender.send("connect", index)

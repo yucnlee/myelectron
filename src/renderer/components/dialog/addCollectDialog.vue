@@ -1,15 +1,6 @@
 <template>
-  <a-modal
-    title="新建采集点信息"
-    :visible="visible"
-    @cancel="cancel"
-    :centered="true"
-  >
-    <a-form-model
-      :model="form"
-      :label-col="{ span: 4 }"
-      :wrapper-col="{ span: 20 }"
-    >
+  <a-modal title="新建采集点信息" :visible="visible" @cancel="cancel" :centered="true">
+    <a-form-model :model="form" :label-col="{ span: 4 }" :wrapper-col="{ span: 20 }">
       <a-row>
         <a-col :span="12">
           <a-form-model-item label="name">
@@ -19,9 +10,7 @@
         <a-col :span="12">
           <a-form-model-item label="areatype">
             <a-select v-model="form.areatype">
-              <a-select-option value="V"
-                >变量存储区(PLC -200 smart独有)</a-select-option
-              >
+              <a-select-option value="V">变量存储区(PLC -200 smart独有)</a-select-option>
               <a-select-option value="DB">DB块</a-select-option>
               <a-select-option value="M">位存储区</a-select-option>
               <a-select-option value="I">数字量输入DI</a-select-option>
@@ -33,15 +22,7 @@
       <a-row>
         <a-col :span="12">
           <a-form-model-item label="db">
-            <a-select v-model="form.db">
-              <a-select-option value="0">_Bit</a-select-option>
-              <a-select-option value="1">_Word</a-select-option>
-              <a-select-option value="2">_DWord</a-select-option>
-              <a-select-option value="3">_Int</a-select-option>
-              <a-select-option value="4">_Dint</a-select-option>
-              <a-select-option value="5">_Real</a-select-option>
-              <a-select-option value="6">_Byte</a-select-option>
-            </a-select>
+            <a-input v-model="form.db"></a-input>
           </a-form-model-item>
         </a-col>
         <a-col :span="12">
@@ -103,7 +84,7 @@ export default {
     },
   },
   watch: {
-    flag: function(val) {
+    flag: function (val) {
       if (this.isAdd == false) {
         this.form = this.itemForm;
       }

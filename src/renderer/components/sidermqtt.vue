@@ -1,23 +1,16 @@
 <template>
-  <a-layout-sider class="sider">
-    <a-input placeholder="请输入FBox序列号,端口号" style="margin: 10px 0;">
-      <a-icon type="search" slot="suffix" style="cursor:pointer;"></a-icon>
-    </a-input>
-    <a-row
-      type="flex"
-      justify="space-around"
-      style="line-height:30px;font-size:20px;text-align:center;background-color:WhiteSmoke;"
-    >
-      <a-col :span="6" :class="{ on: isOnone }" class="one" @click="one">
-        <a-icon type="menu-unfold"></a-icon>
-      </a-col>
-      <a-col :span="6" class="two" :class="{ on: isOntwo }" @click="two">
-        <a-icon type="heart"></a-icon>
-      </a-col>
-      <a-col :span="6" class="three" :class="{ on: isOnthree }" @click="three">
-        <a-icon type="warning"></a-icon>
-      </a-col>
-    </a-row>
+  <div class="page-wireless">
+    <div class="sider-header">
+      <div>
+        <span>盒子菜单</span>
+      </div>
+      <div class="mode">
+        <a-select class="modeselect" v-model="mode">
+          <a-select-option value="1">有线</a-select-option>
+          <a-select-option value="2">无线</a-select-option>
+        </a-select>
+      </div>
+    </div>
     <a-menu
       mode="inline"
       class="menu"
@@ -25,45 +18,37 @@
       :default-selected-keys="['0']"
       v-if="menuType === 1"
     >
-      <a-menu-item
-        v-for="(item, index) in menuList"
-        class="dfsa"
-        :key="item.clientId"
-      >
-        <span
-          :class="{ circlegreen: checkindex.includes(index) }"
-          class="dib circlered"
-        ></span>
+      <a-menu-item v-for="(item, index) in menuList" class="dfsa" :key="item.clientId">
+        <span :class="{ circlegreen: checkindex.includes(index) }" class="dib circlered"></span>
         <span class="dib">{{ item.clientId }}</span>
         <a-button
           v-if="!checkindex.includes(index)"
           size="small"
           type="primary"
-          @click.self="triConnection(item, index)"
+          @click="triConnection(item, index)"
           class="dib"
           :loading="loading"
-          >发送连接</a-button
-        >
+        >发送连接</a-button>
         <a-button
           v-if="checkindex.includes(index)"
           size="small"
           type="primary"
-          @click.self="triDisConnection(item, index)"
+          @click="triDisConnection(item, index)"
           class="dib"
-          >断开连接</a-button
-        >
+        >断开连接</a-button>
       </a-menu-item>
     </a-menu>
     <div class="side-bottom-div" @click="openMqttPage">
       <a-icon type="plus"></a-icon>
       <span>增加mqtt连接</span>
     </div>
-  </a-layout-sider>
+  </div>
 </template>
 
 <script>
 import addBoxDialog from "@/components/dialog/addBoxDialog";
 import { sponsporedLinks, disconnect } from "@/api/index";
+
 const mqtt = require("mqtt");
 export default {
   components: {
@@ -72,6 +57,7 @@ export default {
   data() {
     return {
       checkindex: [],
+      mode: "2",
       loading: false,
       // 设置menuitem status
       isOnone: true,
@@ -134,6 +120,7 @@ export default {
         keepalive: 9000,
       };
       let client = await mqtt.connect(url, option);
+      console.log(url, option);
       this.loading = true;
       client.on("connect", () => {
         this.checkindex.push(index);
@@ -170,16 +157,19 @@ export default {
     },
   },
   computed: {
-    client: function() {
+    client: function () {
       return this.$store.state.client;
     },
-    mqttObj: function() {
+    mqttObj: function () {
       return this.$store.state.mqttObj;
     },
   },
   watch: {
-    mqttObj: function(newval) {
+    mqttObj: function (newval) {
       this.menuList.push(newval);
+    },
+    mode: function (val) {
+      this.$store.commit("setMode", val);
     },
   },
 };
@@ -227,6 +217,24 @@ export default {
   padding: 0;
 }
 
+.page-wireless {
+  position: relative;
+  height: 100%;
+}
+.sider-header {
+  height: 46px;
+  margin: 0 0 4px 0;
+  line-height: 46px;
+  text-align: center;
+  background-color: gray;
+  color: #34c388;
+  display: flex;
+  justify-content: space-around;
+}
+
+.ant-menu {
+  border-top: 1px solid #e8e8e8;
+}
 body {
   font-family: "Source Sans Pro", sans-serif;
 }

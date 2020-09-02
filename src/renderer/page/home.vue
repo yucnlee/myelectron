@@ -1,14 +1,18 @@
 <template>
   <div id="wrapper">
-    <a-layout>
-      <fakeTitleBar></fakeTitleBar>
-      <a-layout>
-        <router-view name="sider"></router-view>
-        <a-layout>
+    <el-container>
+      <el-header>
+        <fakeTitleBar></fakeTitleBar>
+      </el-header>
+      <el-container>
+        <el-aside>
+          <router-view name="sider"></router-view>
+        </el-aside>
+        <el-main>
           <router-view></router-view>
-        </a-layout>
-      </a-layout>
-    </a-layout>
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
@@ -81,29 +85,23 @@ body {
   height: 100vh;
   width: 100vw;
 }
-
-.ant-layout {
+.el-container {
   height: 100%;
 }
-
-.ant-layout-header {
-  background-color: white;
+.el-header {
+  height: 40px !important;
 }
-
-.ant-layout-sider {
+.el-aside {
+  width: 250px !important;
+}
+.el-main {
   height: 100%;
-  background-color: white;
-}
-
-.wrapper-header {
-  background-color: white;
-  line-height: 40px;
-  border-bottom: 0.5px solid gray;
+  display: flex;
 }
 
 .side-bottom {
   position: absolute;
-  bottom: 1px;
+  bottom: 0;
   width: 100%;
   line-height: 40px;
   font-size: 20px;
@@ -132,23 +130,6 @@ body {
     cursor: pointer;
   }
 }
-
-.circlegreen {
-  background-color: green !important;
-  border-radius: 50%;
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-}
-
-.circlered {
-  background-color: red;
-  border-radius: 50%;
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-}
-
 .dib {
   display: inline-block;
 }

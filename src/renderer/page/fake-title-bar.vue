@@ -6,14 +6,7 @@
       </span>
       <span class="name">3H1终端管理</span>
     </div>
-
     <div class="handle-bar">
-      <div class="mode">
-        <a-select class="modeselect handle-bar" v-model="mode">
-          <a-select-option value="1">有线</a-select-option>
-          <a-select-option value="2">无线</a-select-option>
-        </a-select>
-      </div>
       <div @click="minimizeWin" class="remote">
         <i class="el-icon-minus" style="font-size:16px;"></i>
       </div>
@@ -31,11 +24,6 @@
 import { remote } from "electron";
 export default {
   name: "fakeTitleBar",
-  data() {
-    return {
-      mode: "",
-    };
-  },
   methods: {
     minimizeWin() {
       remote.getCurrentWindow().minimize(); // 窗口最小化
@@ -51,14 +39,6 @@ export default {
     },
     closeWin() {
       remote.getCurrentWindow().close(); // 关闭窗口，也结束了所有进程
-    },
-  },
-  mounted() {
-    this.mode = "1";
-  },
-  watch: {
-    mode: function(val) {
-      this.$store.commit("setMode", val);
     },
   },
 };
@@ -113,22 +93,8 @@ export default {
     margin-right: 15px;
   }
 }
-.mode {
-  margin-right: 70px;
-}
 </style>
 <style>
-.modeselect .ant-select-selection {
-  border: 0;
-  border-radius: 0;
-  box-shadow: 0px 0px 0px 0px;
-  color: green;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  background-color: white;
-}
-
 .imgwrap {
   display: flex;
   align-items: center;
